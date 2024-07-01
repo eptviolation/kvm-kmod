@@ -85,28 +85,28 @@ def hack_content(fname, data):
         if fname == 'kvm_main.c' and inside_block(r'^int kvm_init\(', r'^}'):
             if match(r'return 0;'):
                 w('\tprintk("loaded kvm module (%s)\\n");\n' % (version,))
-    if match(r'^#define TRACE_INCLUDE_PATH'):
-        line = '#define TRACE_INCLUDE_PATH x86'
-    if match(r'ms_hyperv\.nested_features & HV_X64_NESTED_GUEST_MAPPING_FLUSH$'):
-        w(line)
-        line = '\t    && LINUX_VERSION_CODE >= KERNEL_VERSION(4,21,0)'
-    if match(r'^static void kvm_handle_intel_pt_intr'):
+        if match(r'^#define TRACE_INCLUDE_PATH'):
+            line = '#define TRACE_INCLUDE_PATH x86'
+        if match(r'ms_hyperv\.nested_features & HV_X64_NESTED_GUEST_MAPPING_FLUSH$'):
+            w(line)
+            line = '\t    && LINUX_VERSION_CODE >= KERNEL_VERSION(4,21,0)'
+        if match(r'^static void kvm_handle_intel_pt_intr'):
             w('#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,1,0)')
-    if match_block_end(r'^static void kvm_handle_intel_pt_intr', '^}'):
-        w(line)
-        line = '#endif'
-    if match(r'handle_intel_pt_intr\s*='):
+        if match_block_end(r'^static void kvm_handle_intel_pt_intr', '^}'):
+            w(line)
+            line = '#endif'
+        if match(r'handle_intel_pt_intr\s*='):
             w('#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,1,0)')
-        w(line)
-        line = '#endif'
-    if match(r'boot_cpu_data.x86_cache_bits'):
+            w(line)
+            line = '#endif'
+        if match(r'boot_cpu_data.x86_cache_bits'):
             w('#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,19,0)')
-        w(line)
-        w('#else')
-        w(sub('x86_cache_bits', 'x86_phys_bits', line))
-        line = '#endif'
-    if match_block_end(r'^static void kvm_mmu_notifier_invalidate_range_end', '^}'):
-        w(line)
+            w(line)
+            w('#else')
+            w(sub('x86_cache_bits', 'x86_phys_bits', line))
+            line = '#endif'
+        if match_block_end(r'^static void kvm_mmu_notifier_invalidate_range_end', '^}'):
+            w(line)
             w('')
             w('#if LINUX_VERSION_CODE < KERNEL_VERSION(5,0,0)')
             w('#if LINUX_VERSION_CODE < KERNEL_VERSION(4,19,0)')
@@ -142,38 +142,38 @@ def hack_content(fname, data):
             w('#define kvm_mmu_notifier_invalidate_range_end __kvm_mmu_notifier_invalidate_range_end')
             w('#endif')
             line = ''
-    if match(r'freq->policy->cpus'):
+        if match(r'freq->policy->cpus'):
             w('#if LINUX_VERSION_CODE < KERNEL_VERSION(5,2,0)')
-        w('        cpu = freq->cpu;');
-        w('#else')
-        w(line)
-        line = '#endif'
-    if match(r'DEFINE_STATIC_KEY_FALSE.vmx_l1d_should_flush'):
+            w('        cpu = freq->cpu;');
+            w('#else')
+            w(line)
+            line = '#endif'
+        if match(r'DEFINE_STATIC_KEY_FALSE.vmx_l1d_should_flush'):
             w('#if LINUX_VERSION_CODE < KERNEL_VERSION(5,2,0)')
             w('static DEFINE_STATIC_KEY_FALSE(mds_user_clear);')
-        w('#endif')
-    if match(r'BUILD_BUG_ON_MSG.*INTEL_PMC_MAX_FIXED'):
+            w('#endif')
+        if match(r'BUILD_BUG_ON_MSG.*INTEL_PMC_MAX_FIXED'):
             line = sub(r'!=', '>', line)
-    if match(r'BUILD_BUG_ON.*(CPUID_LNX_4|CPUID_7_1_EAX)') or \
-            (inside_block(r'^static .*reverse_cpuid', r'^}') and match('CPUID_7_1_EAX')):
+        if match(r'BUILD_BUG_ON.*(CPUID_LNX_4|CPUID_7_1_EAX)') or \
+           (inside_block(r'^static .*reverse_cpuid', r'^}') and match('CPUID_7_1_EAX')):
             w('#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,3,0)')
-        w(line)
+            w(line)
             line = '#endif'
-    if match(r'AVX512_BF16'):
+        if match(r'AVX512_BF16'):
             # For Linux versions that lack CPUID_7_1_EAX
             line = sub(r'F\(AVX512_BF16\)', '(1u << 5)', line)
-    if match(r'^SYM_FUNC_START'):
+        if match(r'^SYM_FUNC_START'):
             w('#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,5,0)')
-        w(line)
-        w('#else')
+            w(line)
+            w('#else')
             w(sub(r'^SYM_FUNC_START', 'ENTRY', line))
-        line = '#endif'
-    if match(r'^SYM_FUNC_END'):
+            line = '#endif'
+        if match(r'^SYM_FUNC_END'):
             w('#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,5,0)')
-        w(line)
-        w('#else')
+            w(line)
+            w('#else')
             w(sub(r'^SYM_FUNC_END', 'ENDPROC', line))
-        line = '#endif'
+            line = '#endif'
 
         for ident in compat_apis:
             line = sub(r'\b' + ident + r'\b', 'kvm_' + ident, line)
@@ -306,7 +306,7 @@ def source_sync(arch):
             '%(linux)s/arch/%(arch)s/kvm/vmx': 'source/vmx',
             '%(linux)s/virt/kvm': 'source'}
     for srcdir, outdir in sourcedirs.items():
-    pattern = (srcdir + '/*.[chS]') % { 'linux': linux, 'arch': arch }
+        pattern = (srcdir + '/*.[chS]') % { 'linux': linux, 'arch': arch }
         sources = [file
                for file in glob(pattern)
                if not file.endswith('.mod.c')]
