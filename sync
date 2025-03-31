@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/local/bin/python2.7
 
 import sys, os, glob, os.path, shutil, re
 from optparse import OptionParser
@@ -79,7 +79,9 @@ def hack_content(fname, data):
         if match(r'^#define pr_fmt'):
             pr_fmt = sub(r'#define pr_fmt\([^)]*\) ("[^"]*").*', r'\1', line) + ' '
             line = ''
-        line = sub(r'pr_debug\(([^),]*)', r'pr_debug(' + pr_fmt + r'\1', line)
+        # TODO: fix this
+        #line = sub(r'pr_debug\(([^),]*)', r'pr_debug(' + pr_fmt + r'\1', line)
+        line = sub(r'pr_debug\(([^),]*)', r'pr_debug('r'\1', line)
         if match(r'MODULE_AUTHOR'):
             w('MODULE_INFO(version, "%s");' % (version,))
         if fname == 'kvm_main.c' and inside_block(r'^int kvm_init\(', r'^}'):
@@ -194,15 +196,16 @@ def unifdef(fname):
     file(fname, 'w').write(data)
 
 hack_files = {
-    'x86': str.split('async_pf.c cpuid.c cpuid.h emulate.c eventfd.c i8254.c i8259.c irq.c irq.h'
-                     ' kvm_main.c lapic.c lapic.h'
-                     ' mmu/mmu_audit.c mmu/mmu.c mmu/page_track.c mmu/paging_tmpl.h mtrr.c'
+    'x86': str.split('async_pf.c cpuid.c cpuid.h emulate.c eventfd.c debugfs.c hyperv.c i8254.c i8259.c ioapic.c '
+                     ' irq_comm.c irq.c irq.h'
+                     ' kvm_main.c kvm_onhyperv.c lapic.c lapic.h'
+                     ' mmu/mmu.c mmu/page_track.c mmu/paging_tmpl.h mmu/spte.c mmu/tdp_iter.c mmu/tdp_mmu.c mtrr.c'
                      ' pmu.c'
-                     ' svm/avic.c svm/nested.c svm/pmu.c svm/svm_onhyperv.c svm/svm.c svm/vmenter.S'
+                     ' smm.c svm/avic.c svm/nested.c svm/pmu.c svm/svm_onhyperv.c svm/svm.c svm/sev.c svm/vmenter.S'
                      ' trace.h tss.h'
-                     ' vmx/capabilities.h vmx/evmcs.c vmx/evmcs.h vmx/nested.c vmx/nested.h vmx/pmu_intel.c '
-                     ' vmx/vmcs_shadow_fields.h vmx/vmcs.h vmx/vmcs12.c vmx/vmcs12.h vmx/vmenter.S vmx/vmx.c vmx/vmx.h'
-                     ' x86.c x86.h'),
+                     ' vmx/capabilities.h vmx/hyperv.c vmx/hyperv_evmcs.c vmx/hyperv_evmcs.h vmx/nested.c vmx/nested.h vmx/pmu_intel.c '
+                     ' vmx/posted_intr.c vmx/sgx.c vmx/vmcs_shadow_fields.h vmx/vmcs.h vmx/vmcs12.c vmx/vmcs12.h vmx/vmenter.S vmx/vmx.c vmx/vmx.h'
+                     ' x86.c x86.h xen.c'),
 }
 
 def mkdir(dir):
