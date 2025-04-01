@@ -76,12 +76,13 @@ def hack_content(fname, data):
 
         orig = line
         f = line.split()
+        if match(r'^#define pr_fmt\([^)]*\)\s*(KBUILD_MODNAME).'):
+            pr_fmt = sub(r'#define pr_fmt\([^)]*\)\s*(KBUILD_MODNAME).*("[^"]*).*', r'\1 ": "', line) + ' '
+            line = ''
         if match(r'^#define pr_fmt'):
             pr_fmt = sub(r'#define pr_fmt\([^)]*\) ("[^"]*").*', r'\1', line) + ' '
             line = ''
-        # TODO: fix this
-        #line = sub(r'pr_debug\(([^),]*)', r'pr_debug(' + pr_fmt + r'\1', line)
-        line = sub(r'pr_debug\(([^),]*)', r'pr_debug('r'\1', line)
+        line = sub(r'pr_debug\(([^),]*)', r'pr_debug(' + pr_fmt + r'\1', line)
         if match(r'MODULE_AUTHOR'):
             w('MODULE_INFO(version, "%s");' % (version,))
         if fname == 'kvm_main.c' and inside_block(r'^int kvm_init\(', r'^}'):
